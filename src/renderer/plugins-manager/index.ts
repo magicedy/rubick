@@ -48,8 +48,8 @@ const createPluginManager = (): any => {
       type: 'dbGet',
       data: { id: 'rubick-local-start-app' },
     });
-    if (result && result.data) {
-      appList.value.push(...result.data);
+    if (result && result.value) {
+      appList.value.push(...result.value);
     }
   };
 
