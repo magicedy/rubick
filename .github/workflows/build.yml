@@ -1,0 +1,112 @@
+# build.yml
+
+# Workflow's name
+name: Build And Upload Artifacts
+
+# Workflow's trigger
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+# Workflow's jobs
+jobs:
+  # job's id
+  build:
+    # job's name
+    name: build electron app
+
+    # the type of machine to run the job on
+    runs-on: ${{ matrix.os }}
+
+    # create a build matrix for jobs
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-2019, ubuntu-latest]
+
+    # create steps
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      # step1: check out repository
+      - name: Check out git repository
+        uses: actions/checkout@v2
+
+      # step2: install node env
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+
+      - name: Install system deps
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get install libxtst-dev libpng++-dev
+          sudo apt-get install --no-install-recommends -y icnsutils graphicsmagick xz-utils
+          sudo snap install snapcraft --classic
+      # step3: yarn
+      - name: Yarn install
+        run: |
+          yarn
+          yarn global add xvfb-maybe
+          yarn global add @vue/cli
+      - name: Build feature
+        run: |
+          cd ./feature
+          yarn
+          npm run build
+      - name: Build Electron Application
+        run: |
+          yarn electron:build --publish never
+
+      - name: Archive Windows x64 Artifacts
+        if: matrix.os == 'windows-2019'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: build/*-x64.exe*
+
+      - name: Archive Windows ia32 Artifacts
+        if: matrix.os == 'windows-2019'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ia32
+          path: build/*-ia32.exe*
+
+      - name: Archive Windows Universal Artifacts
+        if: matrix.os == 'windows-2019'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-universal
+          path: |
+            build/*.exe*
+            !build/*-x64.exe*
+            !build/*-ia32.exe*
+
+      - name: Archive macOS x64 Artifacts
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-x64
+          path: build/*-x64.dmg*
+
+      - name: Archive macOS arm64 Artifacts
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm64
+          path: build/*-arm64.dmg*
+
+      - name: Archive Linux Artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: build/*.deb

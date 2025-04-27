@@ -9,6 +9,29 @@ module.exports = {
         '@': path.join(__dirname, './src'),
       },
     },
+    node: {
+      __dirname: false,
+      __filename: false,
+      dns: 'empty',
+      http2: 'empty',
+      fs: 'empty',
+      'original-fs': 'empty'
+    },
+    externals: {
+      'dns': 'commonjs dns',
+      'http2': 'commonjs http2',
+      'original-fs': 'commonjs original-fs',
+      'extract-file-icon': 'commonjs extract-file-icon',
+      'extract-file-icon/build/Release/addon.node': 'commonjs extract-file-icon/build/Release/addon.node'
+    },
+    module: {
+      rules: [
+        {
+          test: /\.node$/,
+          use: 'node-loader',
+        }
+      ]
+    }
   },
   pages: {
     index: {
@@ -27,6 +50,9 @@ module.exports = {
         'npm',
         'electron-screenshots',
         '@electron/remote',
+        'original-fs',
+        'dns',
+        'http2'
       ],
       // Use this to change the entry point of your app's render process. default src/[main|index].[js|ts]
       builderOptions: {
