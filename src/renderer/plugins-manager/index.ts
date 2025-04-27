@@ -46,10 +46,10 @@ const createPluginManager = (): any => {
   const initLocalStartPlugin = () => {
     const result = ipcRenderer.sendSync('msg-trigger', {
       type: 'dbGet',
-      data: { id: PLUGIN_HISTORY },
+      data: { id: 'rubick-local-start-app' },
     });
-    if (result && result.value) {
-      appList.value.push(...result.value);
+    if (result && result.data) {
+      appList.value.push(...result.data);
     }
   };
 
